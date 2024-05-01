@@ -28,10 +28,12 @@ import cafe.adriel.voyager.core.screen.Screen
 import com.ertaqy.recorder.base.animations.AFLoading
 import com.ertaqy.recorder.base.audiorecord.AndroidAudioRecorder
 import com.ertaqy.recorder.base.playback.AndroidAudioPlayer
+import com.ertaqy.recorder.base.service.RecorderService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 
 class UploadingScreen(@ApplicationContext val context: Context) : Screen {
+    private val recorderService = RecorderService()
     private val recorder by lazy {
         AndroidAudioRecorder(context)
     }
@@ -56,11 +58,10 @@ class UploadingScreen(@ApplicationContext val context: Context) : Screen {
             RecordingUi(isRecording.value)
             Spacer(modifier = Modifier.height(25.dp))
             Button(onClick = {
-                File(context.cacheDir, "audio.mp3").also {
-                    recorder.start(it)
-                    audioFile = it
-                    isRecording.value = true
-                }
+                recorderService.startService(context)
+                audioFile = recorderService.audioFile
+                isRecording.value = true
+
             }) {
                 Text(text = "Start recording")
             }
@@ -71,7 +72,7 @@ class UploadingScreen(@ApplicationContext val context: Context) : Screen {
                 Text(text = "Stop recording")
             }
             Button(onClick = {
-                player.playFile(audioFile ?: return@Button)
+                player.playFile( audioFile ?: return@Button)
             }) {
                 Text(text = "Play")
             }
@@ -83,6 +84,8 @@ class UploadingScreen(@ApplicationContext val context: Context) : Screen {
         }
     }
 }
+
+
 @Composable
 fun RecordingUi(isRecording : Boolean){
     if (isRecording)
@@ -100,6 +103,7 @@ fun RecordingUi(isRecording : Boolean){
                 )
         )
 }
+
 @Composable
 fun RecordBtn(){
     Box {

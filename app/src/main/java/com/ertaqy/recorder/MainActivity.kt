@@ -29,6 +29,7 @@ import cafe.adriel.voyager.transitions.FadeTransition
 import com.ertaqy.recorder.base.animations.AFLoading
 import com.ertaqy.recorder.base.audiorecord.AndroidAudioRecorder
 import com.ertaqy.recorder.base.playback.AndroidAudioPlayer
+import com.ertaqy.recorder.base.service.RecorderService
 import com.ertaqy.recorder.features.splash.presentation.SplashScreen
 import com.ertaqy.recorder.ui.theme.ErtaqyDeliveryCallRecorderTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,15 +37,6 @@ import java.io.File
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val recorder by lazy {
-        AndroidAudioRecorder(applicationContext)
-    }
-
-    private val player by lazy {
-        AndroidAudioPlayer(applicationContext)
-    }
-
-    private var audioFile: File? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +45,6 @@ class MainActivity : ComponentActivity() {
             arrayOf(Manifest.permission.RECORD_AUDIO),
             0
         )
-
         setContent {
             ErtaqyDeliveryCallRecorderTheme {
                 val isRecording = remember {
