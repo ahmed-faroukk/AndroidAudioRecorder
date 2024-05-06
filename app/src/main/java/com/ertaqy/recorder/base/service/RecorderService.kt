@@ -12,27 +12,31 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ertaqy.recorder.R
 import com.ertaqy.recorder.base.audiorecord.AndroidAudioRecorder
 import com.ertaqy.recorder.base.playback.AndroidAudioPlayer
+import com.ertaqy.recorder.features.uploading.RecordingViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 
 enum class ServiceActions {
     START, STOP
 }
-class RecorderService : Service() {
 
-    // try shared viewmodel
+@AndroidEntryPoint
+class RecorderService() : Service() {
+    private var audioFile: File? = null
 
-    private val recorder by lazy {
+  /*  private val recorder by lazy {
         AndroidAudioRecorder(this)
-    }
+    }*/
 
-    private val player by lazy {
+  /*  private val player by lazy {
         AndroidAudioPlayer(this)
-    }
+    }*/
 
-     var audioFile: File? = null
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand() called")
         when (intent?.action) {
@@ -78,11 +82,6 @@ class RecorderService : Service() {
             .build()
         try {
             startForeground(FOREGROUND_NOTIFICATION_ID, notification)
-            File(this.cacheDir, "audio.mp3").also {
-                recorder.start(it)
-                audioFile = it
-            }
-
         } catch (e: Exception) {
             Log.e(TAG, "Error starting foreground service: ${e.message}")
         }
@@ -90,21 +89,7 @@ class RecorderService : Service() {
 
     private fun stopForegroundService() {
         stopSelf()
-        recorder.stop()
-    }
-
-    fun stopService(context : Context){
-        val intent = Intent(context, RecorderService::class.java).apply {
-            action = ServiceActions.STOP.toString()
-        }
-        context.startService(intent)
-    }
-
-    fun startService(context : Context){
-        val intent = Intent(context, RecorderService::class.java).apply {
-            action = ServiceActions.START.toString()
-        }
-        context.startService(intent)
+    //    recorder.stop()
     }
 
 

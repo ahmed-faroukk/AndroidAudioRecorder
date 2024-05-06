@@ -2,6 +2,7 @@ package com.ertaqy.recorder.features.uploading
 
 import android.content.Context
 import android.graphics.drawable.Icon
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,28 +25,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.hilt.getViewModel
 import com.ertaqy.recorder.base.animations.AFLoading
 import com.ertaqy.recorder.base.audiorecord.AndroidAudioRecorder
 import com.ertaqy.recorder.base.playback.AndroidAudioPlayer
 import com.ertaqy.recorder.base.service.RecorderService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
+import javax.inject.Inject
 
-class UploadingScreen(@ApplicationContext val context: Context) : Screen {
-    private val recorderService = RecorderService()
-    private val recorder by lazy {
-        AndroidAudioRecorder(context)
-    }
-
-    private val player by lazy {
-        AndroidAudioPlayer(context)
-    }
-
-    private var audioFile: File? = null
+class UploadingScreen @Inject constructor(@ApplicationContext val context: Context) : Screen {
 
     @Composable
     override fun Content() {
+
+        val viewModel: RecordingViewModel = getViewModel()
+        val recorder by lazy {
+            AndroidAudioRecorder(context)
+        }
+        val player by lazy {
+            AndroidAudioPlayer(context)
+        }
+        Log.d("from Compose fun ", viewModel.audioFile.value.toString())
+        val file = viewModel.audioFile.value
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -54,28 +58,46 @@ class UploadingScreen(@ApplicationContext val context: Context) : Screen {
             val isRecording = remember {
                 mutableStateOf(false)
             }
-
             RecordingUi(isRecording.value)
+
             Spacer(modifier = Modifier.height(25.dp))
+
             Button(onClick = {
-                recorderService.startService(context)
-                audioFile = recorderService.audioFile
+                File(context.cacheDir, "audio.mp3").also {
+                    recorder.start(it)
+                    viewModel.setAudioFile(it)
+
+                }
+
                 isRecording.value = true
+                Log.d("UploadingScreen", "Audio file is $file")
 
             }) {
                 Text(text = "Start recording")
             }
+
             Button(onClick = {
+
                 recorder.stop()
                 isRecording.value = false
+                Log.d("UploadingScreen", "Audio file is $file")
+
             }) {
                 Text(text = "Stop recording")
             }
+
             Button(onClick = {
-                player.playFile( audioFile ?: return@Button)
+                Log.d("UploadingScreen", "Audio file is $file")
+                val file = viewModel.audioFile.value
+                if (file?.exists() == true) {
+                    player.playFile(file)
+                } else {
+                    Log.d("UploadingScreen", "Audio file doesn't exist")
+                }
             }) {
                 Text(text = "Play")
             }
+
             Button(onClick = {
                 player.stop()
             }) {
@@ -87,7 +109,7 @@ class UploadingScreen(@ApplicationContext val context: Context) : Screen {
 
 
 @Composable
-fun RecordingUi(isRecording : Boolean){
+fun RecordingUi(isRecording: Boolean) {
     if (isRecording)
         AFLoading(
             color1 = Color.Red,
@@ -105,7 +127,7 @@ fun RecordingUi(isRecording : Boolean){
 }
 
 @Composable
-fun RecordBtn(){
+fun RecordBtn() {
     Box {
         Icon(imageVector = Icons.Filled.Send, contentDescription = "")
     }

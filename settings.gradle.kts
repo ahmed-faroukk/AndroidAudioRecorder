@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "ErtaqyDeliveryCallRecorder"
 include(":app")
- 
+include(":callRecorder")

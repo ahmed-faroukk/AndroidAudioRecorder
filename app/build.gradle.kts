@@ -113,7 +113,9 @@ dependencies {
     implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
     // Hilt integration
     implementation("cafe.adriel.voyager:voyager-hilt:$voyagerVersion")
-
-
+    // get record module
+    implementation(project(":callRecorder"))
+    // work manager
+    implementation ("androidx.work:work-runtime:2.3.1")
 
 }
