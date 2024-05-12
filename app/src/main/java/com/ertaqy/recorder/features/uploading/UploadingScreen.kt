@@ -9,9 +9,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Send
@@ -28,84 +33,117 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.hilt.getViewModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import com.ertaqy.recorder.FileItem
 import com.ertaqy.recorder.base.animations.AFLoading
 import com.ertaqy.recorder.base.audiorecord.AndroidAudioRecorder
 import com.ertaqy.recorder.base.playback.AndroidAudioPlayer
 import com.ertaqy.recorder.base.service.RecorderService
+import com.ertaqy.recorder.features.Files.FilesScreen
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
+import kotlin.random.Random
 
-class UploadingScreen @Inject constructor(@ApplicationContext val context: Context) : Screen {
+class UploadingScreen @Inject constructor(@ApplicationContext val context: Context , val file : File? , val recorder: AndroidAudioRecorder , val player: AndroidAudioPlayer) : Screen {
 
     @Composable
     override fun Content() {
 
+        val navigator = LocalNavigator.current
         val viewModel: RecordingViewModel = getViewModel()
-        val recorder by lazy {
-            AndroidAudioRecorder(context)
-        }
-        val player by lazy {
-            AndroidAudioPlayer(context)
-        }
-        Log.d("from Compose fun ", viewModel.audioFile.value.toString())
-        val file = viewModel.audioFile.value
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            val isRecording = remember {
-                mutableStateOf(false)
-            }
-            RecordingUi(isRecording.value)
 
-            Spacer(modifier = Modifier.height(25.dp))
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ){
 
-            Button(onClick = {
-                File(context.cacheDir, "audio.mp3").also {
-                    recorder.start(it)
-                    viewModel.setAudioFile(it)
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black)
+                    .weight(3f),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
+                val isRecording = remember {
+                    mutableStateOf(false)
                 }
 
-                isRecording.value = true
-                Log.d("UploadingScreen", "Audio file is $file")
+                RecordingUi(isRecording.value)
 
-            }) {
-                Text(text = "Start recording")
-            }
+                Spacer(modifier = Modifier.height(25.dp))
 
-            Button(onClick = {
+                Button(onClick = {
+                    val randomInt = Random.nextInt(50)
+                    File(context.cacheDir, "Ertaqy_Call_record$randomInt.mp3").also {
+                        recorder.start(it)
+                        viewModel.setAudioFile(it)
+                        viewModel.addToList(it)
+                    }
 
-                recorder.stop()
-                isRecording.value = false
-                Log.d("UploadingScreen", "Audio file is $file")
+                    isRecording.value = true
+                    Log.d("UploadingScreen", "Audio file is $file")
 
-            }) {
-                Text(text = "Stop recording")
-            }
-
-            Button(onClick = {
-                Log.d("UploadingScreen", "Audio file is $file")
-                val file = viewModel.audioFile.value
-                if (file?.exists() == true) {
-                    player.playFile(file)
-                } else {
-                    Log.d("UploadingScreen", "Audio file doesn't exist")
+                }) {
+                    Text(text = "Start recording")
                 }
-            }) {
-                Text(text = "Play")
+
+                Button(onClick = {
+                    recorder.stop()
+                    isRecording.value = false
+                    Log.d("UploadingScreen", "Audio file is $file")
+
+                }) {
+                    Text(text = "Stop recording")
+                }
+
+                Button(onClick = {
+                    Log.d("UploadingScreen", "Audio file is $file")
+                    val file = viewModel.audioFile.value
+                    if (file?.exists() == true) {
+                        player.playFile(file)
+                    } else {
+                        Log.d("UploadingScreen", "Audio file doesn't exist")
+                    }
+                }) {
+                    Text(text = "Play")
+                }
+
+                Button(onClick = {
+                    player.stop()
+                }) {
+                    Text(text = "Stop playing")
+                }
+            }
+            LazyColumn(
+                Modifier
+                    .fillMaxWidth()
+                    .weight(3f)
+                    .background(Color.DarkGray, RoundedCornerShape(25.dp))
+                    .padding(25.dp) ,
+            ) {
+                item {
+                    if (viewModel.files.isEmpty())
+                        Column {
+                            Text(text = "you have not recorde any audio yet ")
+                        }
+                }
+                items(viewModel.files) { file ->
+                   // FileItem(player,file)
+                }
             }
 
-            Button(onClick = {
-                player.stop()
-            }) {
-                Text(text = "Stop playing")
-            }
+
+        }
+
         }
     }
-}
+
 
 
 @Composable
@@ -114,11 +152,13 @@ fun RecordingUi(isRecording: Boolean) {
         AFLoading(
             color1 = Color.Red,
             color2 = Color.Red,
-            color3 = Color.Red
+            color3 = Color.Red ,
+            circleSize = 10.dp
         ) else
         Box(
             modifier = Modifier
-                .size(20.dp)
+                .fillMaxWidth()
+                .height(1.dp)
                 .background(
                     color = Color.Red,
                     shape = CircleShape

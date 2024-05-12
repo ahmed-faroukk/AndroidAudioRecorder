@@ -10,6 +10,10 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.activity.viewModels
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.core.app.NotificationCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -19,6 +23,7 @@ import com.ertaqy.recorder.base.playback.AndroidAudioPlayer
 import com.ertaqy.recorder.features.uploading.RecordingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
+import kotlin.random.Random
 
 enum class ServiceActions {
     START, STOP
@@ -26,29 +31,56 @@ enum class ServiceActions {
 
 @AndroidEntryPoint
 class RecorderService() : Service() {
-    private var audioFile: File? = null
 
-  /*  private val recorder by lazy {
+    private var _audioFile: MutableState<File?> = mutableStateOf(null)
+    var audioFile = _audioFile
+
+    private var _files = mutableListOf<File>()
+    val files = _files
+
+    val recorder by lazy {
         AndroidAudioRecorder(this)
-    }*/
+    }
 
-  /*  private val player by lazy {
-        AndroidAudioPlayer(this)
-    }*/
+    val isRecording by lazy {
+        mutableStateOf(false)
+    }
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand() called")
         when (intent?.action) {
-            ServiceActions.START.toString() -> startForegroundService()
-            ServiceActions.STOP.toString() -> stopForegroundService()
+            ServiceActions.START.toString() -> startRecord()
+            ServiceActions.STOP.toString() -> stopRecord()
         }
         return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "onCreate() called")
+
+
+    }
+
+    private fun startRecord(){
+        startForegroundService()
+        val randomInt = Random.nextInt(50)
+        File(cacheDir, "Ertaqy_Call_record$randomInt.mp3").also {
+            recorder.start(it)
+            setAudioFile(it)
+            addToList(it)
+        }
+        isRecording.value = true
+        com.ertaqy.recorder.startService(applicationContext)
+        Log.d("UploadingScreen", "Audio file is $audioFile")
+    }
+
+    private fun stopRecord(){
+        stopForegroundService()
+        recorder.stop()
+        com.ertaqy.recorder.stopService(applicationContext)
+        isRecording.value = false
+        Log.d("UploadingScreen", "Audio file is $audioFile")
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -89,7 +121,14 @@ class RecorderService() : Service() {
 
     private fun stopForegroundService() {
         stopSelf()
-    //    recorder.stop()
+    }
+    fun addToList(file : File) {
+        _files.add(file)
+        println("new list state is ${_files.toString()}")
+    }
+
+    fun setAudioFile(file: File?) {
+        _audioFile.value = file
     }
 
 

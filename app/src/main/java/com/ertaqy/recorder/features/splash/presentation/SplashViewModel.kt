@@ -19,7 +19,7 @@ class SplashViewModel @Inject constructor(
         viewModelScope.launch {
             delay(3000)
         }.invokeOnCompletion {
-            navigator?.replace(UploadingScreen(context))
+          // navigator?.replace(UploadingScreen(context))
         }
     }
 
