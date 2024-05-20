@@ -58,6 +58,7 @@ import kotlin.random.Random
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val REQUEST_CODE_PERMISSIONS = 1001
 
     override fun onStart() {
         super.onStart()
@@ -68,8 +69,8 @@ class MainActivity : ComponentActivity() {
         val viewModel: RecordingViewModel by viewModels<RecordingViewModel>()
         ActivityCompat.requestPermissions(
             this,
-            arrayOf(Manifest.permission.RECORD_AUDIO),
-            0
+            arrayOf(Manifest.permission.RECORD_AUDIO ,Manifest.permission.WRITE_EXTERNAL_STORAGE , Manifest.permission.READ_EXTERNAL_STORAGE),
+            REQUEST_CODE_PERMISSIONS
         )
         val recorder by lazy {
             AndroidAudioRecorder(this)
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
 
         val file = viewModel.audioFile.value
         Log.d("from Compose fun ", viewModel.audioFile.value.toString())
+
         setContent {
             ErtaqyDeliveryCallRecorderTheme {
                 Column(
@@ -101,31 +103,37 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
                         val isRecording = remember {
                             mutableStateOf(false)
                         }
-
                         RecordingUi(isRecording.value)
-
                         Spacer(modifier = Modifier.height(25.dp))
-
                         AudioPlayerBtn(isPlaying = isPlaying, playOnClick = {
-                            val randomInt = Random.nextInt(50)
-                            File(cacheDir, "Ertaqy_Call_record$randomInt.mp3").also {
-                                recorder.start(it)
-                                viewModel.setAudioFile(it)
-                                viewModel.addToList(it)
+                            try {
+                                val randomInt = Random.nextInt(50)
+                                File(cacheDir, "Ertaqy_Call_record$randomInt.mp3").also {
+                                    recorder.start(it)
+                                    viewModel.setAudioFile(it)
+                                    viewModel.addToList(it)
+                                }
+                                isRecording.value = true
+                                //   startService(applicationContext)
+                                Log.d("UploadingScreen", "Audio file is $file")
+                            }catch (e : Exception){
+                             println("e in start is" + e)
                             }
-                            isRecording.value = true
-                            //   startService(applicationContext)
-                            Log.d("UploadingScreen", "Audio file is $file")
+
                         }, stopOnClick = {
-                            recorder.stop()
-                            //   stopService(applicationContext)
-                            isRecording.value = false
-                            Log.d("UploadingScreen", "Audio file is $file")
-                            player.stop()
+                            try {
+                                recorder.stop()
+                                //   stopService(applicationContext)
+                                isRecording.value = false
+                                Log.d("UploadingScreen", "Audio file is $file")
+                                player.stop()
+                            }catch (e : Exception){
+                                println("e in stop is " + e)
+                            }
+
                         })
 
                     }
@@ -167,6 +175,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }
 
 @Composable
@@ -179,7 +188,7 @@ fun FileItem(
 ) {
     val scope = rememberCoroutineScope()
 
-    val duration = time?.toLong()?.let { viewModel.formatDuration(it) }
+   val duration = time?.toLong()?.let { viewModel.formatDuration(it) }
 
     Box(
         Modifier
@@ -195,8 +204,7 @@ fun FileItem(
             ),
             border = BorderStroke(1.dp, Color.Black),
             modifier = Modifier
-                .fillMaxWidth(
-                )
+                .fillMaxWidth()
                 .height(150.dp)
                 .shadow(25.dp)
         ) {

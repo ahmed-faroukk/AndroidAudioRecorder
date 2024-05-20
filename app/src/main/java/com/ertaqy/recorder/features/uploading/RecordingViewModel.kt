@@ -27,6 +27,9 @@ class RecordingViewModel @Inject constructor(
         _files.add(file)
         println("new list state is ${_files.toString()}")
     }
+    fun cleanFiles(){
+        _files.clear()
+    }
     fun setAudioFile(file: File?) {
         _audioFile.value = file
     }
