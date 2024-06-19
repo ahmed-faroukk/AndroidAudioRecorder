@@ -1,4 +1,4 @@
-package com.ertaqy.recorder.features.uploading
+package com.ertaqy.recorder
 
 import android.content.Context
 import android.media.MediaMetadataRetriever

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
+import com.ertaqy.recorder.RecordingViewModel
 import com.ertaqy.recorder.base.animations.AFLoading
 import com.ertaqy.recorder.base.audiorecord.AndroidAudioRecorder
 import com.ertaqy.recorder.base.playback.AndroidAudioPlayer

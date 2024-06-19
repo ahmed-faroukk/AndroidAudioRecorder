@@ -10,17 +10,11 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.activity.viewModels
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.core.app.NotificationCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ertaqy.recorder.R
 import com.ertaqy.recorder.base.audiorecord.AndroidAudioRecorder
-import com.ertaqy.recorder.base.playback.AndroidAudioPlayer
-import com.ertaqy.recorder.features.uploading.RecordingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import kotlin.random.Random
@@ -50,7 +44,7 @@ class RecorderService() : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand() called")
         when (intent?.action) {
-            ServiceActions.START.toString() -> startRecord()
+            ServiceActions.START.toString() -> startForegroundService()
             ServiceActions.STOP.toString() -> stopRecord()
         }
         return super.onStartCommand(intent, flags, startId)
@@ -75,7 +69,7 @@ class RecorderService() : Service() {
         Log.d("UploadingScreen", "Audio file is $audioFile")
     }
 
-    private fun stopRecord(){
+    private fun stopRecord() {
         stopForegroundService()
         recorder.stop()
         com.ertaqy.recorder.stopService(applicationContext)

@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.hilt.getViewModel
 import com.ertaqy.recorder.base.playback.AndroidAudioPlayer
-import com.ertaqy.recorder.features.uploading.RecordingViewModel
+import com.ertaqy.recorder.RecordingViewModel
 
 class FilesScreen(val player: AndroidAudioPlayer) : Screen {
     @Composable
@@ -26,7 +26,7 @@ class FilesScreen(val player: AndroidAudioPlayer) : Screen {
         FilesUI(viewModel , player)
     }
     @Composable
-    fun FilesUI(viewModel : RecordingViewModel , player : AndroidAudioPlayer){
+    fun FilesUI(viewModel : RecordingViewModel, player : AndroidAudioPlayer){
         LazyColumn(Modifier.padding(25.dp)) {
             items(viewModel.files) { file ->
                 Box(

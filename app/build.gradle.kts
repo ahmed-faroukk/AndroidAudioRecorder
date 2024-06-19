@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.crashlytics.buildtools)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -118,6 +119,7 @@ dependencies {
     // work manager
     implementation ("androidx.work:work-runtime:2.3.1")
 
+    implementation("io.coil-kt:coil-compose:2.0.0") // Use the latest version available
 
 
 

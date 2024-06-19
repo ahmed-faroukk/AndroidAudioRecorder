@@ -43,8 +43,7 @@ class AndroidAudioRecorder @Inject constructor(
         CoroutineScope(Dispatchers.Default).launch {
             try {
                 val mediaRecorder = createRecorder()
-                val audioSource = MediaRecorder.AudioSource.VOICE_DOWNLINK
-                if (isAudioSourceSupported(audioSource)) {
+                val audioSource = MediaRecorder.AudioSource.MIC
                     mediaRecorder.apply {
                         setAudioSource(audioSource)
                         setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
@@ -53,17 +52,21 @@ class AndroidAudioRecorder @Inject constructor(
                         prepare()
                         start()
                         recorder = this
+
+                        Log.d(
+                            "Recorder",
+                            "Recording started with VOICE_DOWNLINK: ${file.absolutePath}"
+                        )
                     }
-                    Log.d("Recorder", "Recording started with VOICE_DOWNLINK: ${file.absolutePath}")
-                } else {
-                    Log.e("Recorder", "Audio source VOICE_DOWNLINK not supported on this device")
-                }
+
             } catch (e: Exception) {
                 Log.e("Recorder", "Failed to start recording", e)
                 recorder?.release()
                 recorder = null
             }
+
         }
+
     }
     // Check if the audio source is supported
     private fun isAudioSourceSupported(audioSource: Int): Boolean {
@@ -76,6 +79,8 @@ class AndroidAudioRecorder @Inject constructor(
             false
         }
     }
+
+
     override fun stop() {
         recorder?.stop()
         recorder?.reset()
